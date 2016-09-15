@@ -1750,6 +1750,8 @@ Copyright Michalis Kamburelis.
 
 The source code of this document is in AsciiDoc on https://github.com/michaliskambi/modern-pascal-introduction . Suggestions for corrections and additions, and patches and pull requests, are always very welcome:) You can reach me through GitHub or email michalis.kambi@gmail.com . My homepage is https://michalis.ii.uni.wroc.pl/~michalis/ .
 
+The source code of this document without the "generic" / "specialize" keywords on https://github.com/maciej-izak/modern-pascal-introduction .
+
 You can redistribute and even modify this document freely, under the same licenses as Wikipedia https://en.wikipedia.org/wiki/Wikipedia:Copyrights :
 
 * _Creative Commons Attribution-ShareAlike 3.0 Unported License (CC BY-SA)_

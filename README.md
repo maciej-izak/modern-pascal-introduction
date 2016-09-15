@@ -10,4 +10,7 @@ The output is on:
 * http://michalis.ii.uni.wroc.pl/~michalis/modern_pascal_introduction/modern_pascal_introduction.html
 * PDF: http://michalis.ii.uni.wroc.pl/~michalis/modern_pascal_introduction/modern_pascal_introduction.pdf
 
+Version without "generic" / "specialize" keywords:
+* http://newpascal.org/assets/modern_pascal_introduction.html
+
 By Michalis Kamburelis (author of Castle Game Engine http://castle-engine.sourceforge.net/ ).
