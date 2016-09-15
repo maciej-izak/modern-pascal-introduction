@@ -1,5 +1,5 @@
 # Quick Modern Object Pascal for Programmers
-Michalis Kamburelis
+Michalis Kamburelis and contributors: Maciej Izak
 :toc: left
 :toclevels: 4
 :sectnums:
@@ -7,6 +7,9 @@ Michalis Kamburelis
 :docinfo1:
 
 ## Why
+
+
+NOTE: This is a modified version of the original document from Michalis, because we (authors of http://newpascal.org/ and http://synopse.info/ ) prefer the "mode delphi" without the "generic" / "specialize" keywords.
 
 There are many books and resources about Pascal out there, but too many of them talk about the old Pascal, without classes, units or generics.
 // Some of them talk about Pascal before it even had classes. Some of them show classes, as done in Delphi, but fail to mention more modern features, like generics.
@@ -1353,7 +1356,9 @@ You can override operators on records too. This is usually easier than overloadi
 include::code-samples/operator_overloading_records.lpr[]
 ----
 
-For records, it's adviced to use `{$modeswitch advancedrecords}` and override operators as `class operator` inside the record. This allows to use generic classes that depend on some operator existence (like `TFPGList`, that depends on equality operator being available) with such records. Otherwise the "global" definition of an operator (not inside the record) would not be found (because it's not available at the code that implements the `TFPGList`), and you could not specialize a list like `specialize TFPGList<TMyRecord>`.
+For records, it's adviced to use `{$modeswitch advancedrecords}` and override operators as `class operator` inside the record (for delphi mode available by design). This allows to use generic classes that depend on some operator existence (like `TFPGList`, that depends on equality operator being available) with such records. Otherwise the "global" definition of an operator (not inside the record) would not be found (because it's not available at the code that implements the `TFPGList`), and you could not specialize a list like `TFPGList<TMyRecord>`.
+
+NOTE: for TList from Generics.Collections module you don't need to override operators.
 
 [source,pascal]
 ----
