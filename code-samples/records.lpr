@@ -1,4 +1,4 @@
-{$mode objfpc}{$H+}{$J-}
+{$mode delphi}
 {$modeswitch advancedrecords}
 type
   TMyRecord = record

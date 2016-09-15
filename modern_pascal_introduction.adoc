@@ -430,7 +430,7 @@ You can always explicitly define a unit of a given identifier, by using it like 
 
 [source,pascal]
 ----
-{$mode objfpc}{$H+}{$J-}
+{$mode delphi}
 program showcolor;
 
 // Both Graphics and GoogleMapsEngine units define TColor type.
@@ -452,7 +452,7 @@ In case of units, remember that they have two `uses` clauses: one in the interfa
 
 [source,pascal]
 ----
-{$mode objfpc}{$H+}{$J-}
+{$mode delphi}
 unit UnitUsingColors;
 
 // INCORRECT example
@@ -479,7 +479,7 @@ The unit `Graphics` (from Lazarus LCL) defines the `TColor` type. But the compil
 
 [source,pascal]
 ----
-{$mode objfpc}{$H+}{$J-}
+{$mode delphi}
 unit UnitUsingColors;
 
 // INCORRECT example.
@@ -507,7 +507,7 @@ The solution is trivial in this case, just change the implementation to explicit
 
 [source,pascal]
 ----
-{$mode objfpc}{$H+}{$J-}
+{$mode delphi}
 unit UnitUsingColors;
 
 interface
@@ -538,7 +538,7 @@ This can be done by redefining the identifier in your new unit.
 
 [source,pascal]
 ----
-{$mode objfpc}{$H+}{$J-}
+{$mode delphi}
 unit MyUnit;
 
 interface
@@ -842,7 +842,7 @@ type
   TGun = class
   end;
 
-  TGunList = specialize TFPGObjectList<TGun>;
+  TGunList = TFPGObjectList<TGun>;
 
   TPlayer = class
     Guns: TGunList;
@@ -1177,7 +1177,7 @@ Note that macros with parameters are not allowed. In general, you should avoid u
 
 [source,pascal]
 ----
-{$mode objfpc}{$H+}{$J-}
+{$mode delphi}
 unit PreprocessorStuff;
 interface
 
@@ -1241,9 +1241,7 @@ Include files have commonly the `.inc` extension, and are used for two purposes:
 +
 [source,pascal]
 ----
-{$mode objfpc}
-{$H+}
-{$J-}
+{$mode delphi}
 {$modeswitch advancedrecords}
 {$ifndef VER3}
   {$error This code can only be compiled using FPC version at least 3.x.}

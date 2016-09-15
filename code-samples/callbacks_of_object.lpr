@@ -1,4 +1,4 @@
-{$mode objfpc}{$H+}{$J-}
+{$mode delphi}
 uses SysUtils;
 
 type

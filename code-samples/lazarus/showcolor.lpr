@@ -1,4 +1,4 @@
-{$mode objfpc}{$H+}{$J-}
+{$mode delphi}
 program showcolor;
 
 // Both Graphics and GoogleMapsEngine units define TColor type.

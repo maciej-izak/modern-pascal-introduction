@@ -1,11 +1,11 @@
-{$mode objfpc}{$H+}{$J-}
+{$mode delphi}
 uses SysUtils, FGL;
 
 type
   TMyClass = class
     I, Square: Integer;
   end;
-  TMyClassList = specialize TFPGObjectList<TMyClass>;
+  TMyClassList = TFPGObjectList<TMyClass>;
 
 var
   List: TMyClassList;

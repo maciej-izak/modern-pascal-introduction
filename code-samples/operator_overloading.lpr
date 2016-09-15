@@ -1,4 +1,4 @@
-{$mode objfpc}{$H+}{$J-}
+{$mode delphi}
 uses StrUtils;
 
 operator* (const S: string; const A: Integer): string;

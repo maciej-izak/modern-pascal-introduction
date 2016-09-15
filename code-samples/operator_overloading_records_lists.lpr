@@ -1,4 +1,4 @@
-{$mode objfpc}{$H+}{$J-}
+{$mode delphi}
 {$modeswitch advancedrecords}
 uses SysUtils, FGL;
 
@@ -20,7 +20,7 @@ begin
 end;
 
 type
-  TMyRecordList = specialize TFPGList<TMyRecord>;
+  TMyRecordList = TFPGList<TMyRecord>;
 
 var
   R, ListItem: TMyRecord;

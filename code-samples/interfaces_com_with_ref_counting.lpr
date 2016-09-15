@@ -1,4 +1,4 @@
-{$mode objfpc}{$H+}{$J-}
+{$mode delphi}
 {$interfaces com}
 
 uses SysUtils, Classes;

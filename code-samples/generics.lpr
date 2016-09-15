@@ -1,8 +1,8 @@
-{$mode objfpc}{$H+}{$J-}
+{$mode delphi}
 uses SysUtils;
 
 type
-  generic TMyCalculator<T> = class
+  TMyCalculator<T> = class
     Value: T;
     procedure Add(const A: T);
   end;
@@ -13,8 +13,8 @@ begin
 end;
 
 type
-  TMyFloatCalculator = specialize TMyCalculator<Single>;
-  TMyStringCalculator = specialize TMyCalculator<string>;
+  TMyFloatCalculator = TMyCalculator<Single>;
+  TMyStringCalculator = TMyCalculator<string>;
 
 var
   FloatCalc: TMyFloatCalculator;

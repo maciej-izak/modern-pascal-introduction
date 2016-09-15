@@ -1,9 +1,9 @@
-{$mode objfpc}{$H+}{$J-}
+{$mode delphi}
 uses SysUtils;
 
 { Note: this example requires FPC 3.1.1 (will not compile with FPC 3.0.0 or older). }
 
-generic function Min<T>(const A, B: T): T;
+function Min<T>(const A, B: T): T;
 begin
   if A < B then
     Result := A else
@@ -11,7 +11,7 @@ begin
 end;
 
 begin
-  Writeln('Min (1, 0): ', specialize Min<Integer>(1, 0));
-  Writeln('Min (3.14, 5): ', specialize Min<Single>(3.14, 5):1:2);
-  Writeln('Min (''a'', ''b''): ', specialize Min<string>('a', 'b'));
+  Writeln('Min (1, 0): ', Min<Integer>(1, 0));
+  Writeln('Min (3.14, 5): ', Min<Single>(3.14, 5):1:2);
+  Writeln('Min (''a'', ''b''): ', Min<string>('a', 'b'));
 end.

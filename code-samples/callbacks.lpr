@@ -1,4 +1,4 @@
-{$mode objfpc}{$H+}{$J-}
+{$mode delphi}
 
 function Add(const A, B: Integer): Integer;
 begin
