@@ -189,7 +189,7 @@ if MyFunction(X) and MyOtherFunction(Y) then...
 
 * It's guaranteed that `MyFunction(X)` will be evaluated first.
 * And if `MyFunction(X)` returns `false`, then the value of expression is known (the value of `false and whatever` is always `false`), and `MyOtherFunction(Y)` will not be executed at all.
-* Analogous rule is for `or` expression. There, if the expression is known to be `true` (because the 1st operand if `true`), the 2nd operand is not evaluated.
+* Analogous rule is for `or` expression. There, if the expression is known to be `true` (because the 1st operand is `true`), the 2nd operand is not evaluated.
 * This is particularly useful when writing expressions like
 +
 [source,pascal]
@@ -292,6 +292,8 @@ Various notes:
 * The `for I := .. to .. do ...` construction it similar to the C-like `for` loop. However, it's more constrained, as you cannot specify arbitrary actions/tests to control the loop iteration. This is strictly for iterating over a consecutive numbers (or other ordinal types). The only flexibility you have is that you can use `downto` instead of `to`, to make numbers go downward.
 +
 In exchange, it looks clean, and is very optimized in execution. In particular, _the expressions for the lower and higher bound are only calculated once_, before the loop starts.
++
+Note that the value of the loop counter variable (`I` in this example) should be considered undefined after the loop has finished due to possible optimizations. It may cause a compiler warning. Unless you exit the loop prematurely by `Break` or `Exit`, in which case the counter variable is guaranteed to retain the last value.
 
 * The `for I in .. do ..` is similar to `foreach` construct in many modern languages. It works intelligently on many built-in types:
 ** It can iterate over all values in the array (example above).
@@ -328,7 +330,7 @@ We didn't yet explain the concept of classes, so the last example may not be obv
 
 To simply output strings in Pascal, use the `Write` or `Writeln` routine. The latter automatically adds a newline at the end.
 
-This is a "magic" routine in Pascal. It takes a variable number of arguments and they can have any type. They are all converted to strings when displaying, with some special syntax for specifying padding and number precision.
+This is a "magic" routine in Pascal. It takes a variable number of arguments and they can have any type. They are all converted to strings when displaying, with a special syntax to specify padding and number precision.
 
 [source,pascal]
 ----
@@ -338,7 +340,7 @@ Writeln('You can pad an integer: ', 666:10);
 Writeln('You can output a float: ', Pi:1:4);
 ----
 
-To explicitly use newline in string, use the `LineEnding` constant (FPC RTL) (the _Castle Game Engine_ has also a shorter `NL` constant). Pascal strings do not interpret any special backslash sequences, so writing
+To explicitly use newline in the string, use the `LineEnding` constant (from FPC RTL). (The _Castle Game Engine_ defines also a shorter `NL` constant.) Pascal strings do not interpret any special backslash sequences, so writing
 
 [source,pascal]
 ----
@@ -362,16 +364,16 @@ Writeln('Second line.');
 
 Note that this will only work in _console_ applications. Make sure you have `{$apptype CONSOLE}` (and *not* `{$apptype GUI}`) defined in your main program file. On some operating systems it actually doesn't matter and will work always (Unix), but on some operating systems trying to write something from a GUI application is an error (Windows).
 
-*In the Castle Game Engine:* use `WritelnLog` or `WritelnWarning`, never `Writeln`. They will be always directed to some useful output. On Unix, standard output. On Windows GUI application, log file. On Android, the _Android logging facility_ (visible when you use `adb logcat`).
+*In the Castle Game Engine:* use `WritelnLog` or `WritelnWarning`, never `Writeln`, to print debug information. They will be always directed to some useful output. On Unix, standard output. On Windows GUI application, log file. On Android, the _Android logging facility_ (visible when you use `adb logcat`). The use of `Writeln` should be limited to the cases when you write a command-line application (like a 3D model converter / generator) and you know that the _standard output_ is available.
 
 ### Converting to a string
 
-If you're looking for a way to convert an arbitrary number of arguments to a string (instead of just directly outputting them), you have a couple of options.
+To convert an arbitrary number of arguments to a string (instead of just directly outputting them), you have a couple of options.
 
 * You can convert particular types to strings using specialized functions like `IntToStr` and `FloatToStr`. Furthermore, you can concatenate strings in Pascal simply by adding them. So you can create a string like this: `'My int number is ' + IntToStr(MyInt) + ', and the value of Pi is ' + FloatToStr(Pi)`.
 ** _Advantage_: Absolutely flexible. There are many `XxxToStr` overloaded versions and friends (like `FormatFloat`), covering many types.
 // They give you a lot of flexibility in formatting.
-** _Another advantage_: Consistent with the reverse functions. To convert a string (for example, user input) back to an integer or float, you use `StrToInt`, `StrToFloat` or friends (like `StrToIntDef`).
+** _Another advantage_: Consistent with the reverse functions. To convert a string (for example, user input) back to an integer or float, you use `StrToInt`, `StrToFloat` and friends (like `StrToIntDef`).
 ** _Disadvantage_: A long concatenation of many `XxxToStr` calls and strings doesn't look nice.
 //For classes, they can override the `TObject.ToString` method.
 //It doesn't have that clean _separation of pattern and arguments_ property of `Format` call.
@@ -379,7 +381,7 @@ If you're looking for a way to convert an arbitrary number of arguments to a str
 * The `Format` function, used like `Format('%d %f %s', [MyInt, MyFloat, MyString])`. This is like `sprintf` function in the C-like languages. It inserts the arguments into the placeholders in the pattern. The placeholders may use special syntax to influence formatting, e.g. `%.4f` results in a floating-point format with 4 digits after the decimal point.
 ** _Advantage_: The separation of _pattern_ string from _arguments_ looks clean. If you need to change the pattern string without touching the arguments (e.g. when translating), you can do it easily.
 ** _Another advantage_: No compiler magic. You can use the same syntax to pass any number of arguments of an arbitrary type in your own routines (declare parameter as an `array of const`). You can then pass these arguments downward to `Format`, or deconstruct the list of parameters and do anything you like with them.
-** _Disadvantage_: Compiler does not check whether the pattern matches the arguments. Using a wrong placeholder type will result in an exception at runtime (`EConversionError` exception, not anything nasty like a segmentation fault).
+** _Disadvantage_: Compiler does not check whether the pattern matches the arguments. Using a wrong placeholder type will result in an exception at runtime (`EConvertError` exception, not anything nasty like a segmentation fault).
 //Note that, unlike the C `sprintf`, the correctness at runtime can be completely verified (there are no dirty pointer tricks inside
 
 * `WriteStr(TargetString, ...)` routine behaves much like `Write(...)`, except that the result is saved to the `TargetString`.
@@ -478,7 +480,7 @@ end;
 end.
 ----
 
-The unit `Graphics` (from Lazarus LCL) defines the `TColor` type. But the compiler will fail to compile the above unit, claiming that you don't implement a procedure `ShowColor` that matches the interface declaration. The problem is that unit `GoogleMapsEngine` also defines a `TColor` type. And it is used only in the `implementation` section, therefore it _shadows_ the `TColor` definition only in the implementation. The equivalent version of above unit, where the error is obvious, looks like this:
+The unit `Graphics` (from Lazarus LCL) defines the `TColor` type. But the compiler will fail to compile the above unit, claiming that you don't implement a procedure `ShowColor` that matches the interface declaration. The problem is that unit `GoogleMapsEngine` also defines a `TColor` type. And it is used only in the `implementation` section, therefore it _shadows_ the `TColor` definition only in the implementation. The equivalent version of the above unit, where the error is obvious, looks like this:
 
 [source,pascal]
 ----
@@ -486,7 +488,7 @@ The unit `Graphics` (from Lazarus LCL) defines the `TColor` type. But the compil
 unit UnitUsingColors;
 
 // INCORRECT example.
-// This is what compiler "sees" when trying to compile previous example
+// This is what the compiler "sees" when trying to compile previous example
 
 interface
 
@@ -533,7 +535,7 @@ end.
 
 ### Exposing one unit identifiers from another
 
-Sometimes you need to take an identifier from a used unit, and _expose_ it from your new unit. The end result should be that using the new unit should make the identifier available in the namespace.
+Sometimes you want to take an identifier from one unit, and _expose_ it in a new unit. The end result should be that using the new unit will make the identifier available in the namespace.
 
 Sometimes this is necessary to preserve backward compatibility with previous unit versions. Sometimes it's nice to "hide" an internal unit this way.
 
@@ -631,7 +633,7 @@ if A is TMyClass then
 
 Properties are a very nice _"syntax sugar"_ to
 
-1. Make something that looks like a field (can be read and set) but underneath is realized by calling a _getter_ and a _setter_ function. A most typical usage is to perform some side-effect each time some value changes.
+1. Make something that looks like a field (can be read and set) but underneath is realized by calling a _getter_ and _setter_ methods. The typical usage is to perform some side-effect (e.g. redraw the screen) each time some value changes.
 2. Make something that looks like a field, but is read-only. In effect, it's like a constant or a parameter-less function.
 
 [source,pascal]
@@ -679,12 +681,15 @@ end;
 //   even if setting RenderingComponent.Color many times to the same value
 //   would be slow. }
 
+Note that instead of specifying a method, you can also specify a field (typically a private field) to directly get or set. In the example above, the `Color` property uses a _setter_ method `SetColor`. But for getting the value, the `Color` property refers directly to the private field `FColor`. Directly referring to a field is faster than implementing trivial getter or setter methods (faster for you, and faster at execution).
+
 When declaring a property you specify:
 
 . Whether it can be read, and how (by directly reading a field, or by using a "getter" method).
 . And, in a similar manner,  whether it can be set, and how (by directly writing to a designated field, or by calling a "setter" method).
 
 The compiler checks that the types and parameters of indicated fields and methods match with the property type. For example, to read an `Integer` property you have to either provide an `Integer` field, or a parameter-less method that returns an `Integer`.
+
 
 Technically, for the compiler, the "getter" and "setter" methods are just normal methods and they can do absolutely anything (including side-effects or randomization). But it's a good convention to design properties to behave more-or-less like fields:
 
@@ -697,7 +702,7 @@ Note that it's OK for _getter_ to have some _invisible_ side-effect, for example
 
 * The _setter_ function should always set the requested value, such that calling the _getter_ yields it back. Do not reject invalid values silently in the "setter" (raise an exception if you must). Do not convert or scale the requested value. The idea is that after `MyClass.MyProperty := 123;` the programmer can expect that `MyClass.MyProperty = 123`.
 
-* The _read-only properties_ are often used to make some field read-only from the outside. Again, the good convention is to make it behave like a constant, at least constant for this object instance, at least constant for this object instance with this state. The value of the property should not change unexpectedly. Make it a function, not a property, if reading it has a side effect or returns something random.
+* The _read-only properties_ are often used to make some field read-only from the outside. Again, the good convention is to make it behave like a constant, at least constant for this object instance with this state. The value of the property should not change unexpectedly. _Make it a function, not a property, if using it has a side effect or returns something random._
 
 * The _"backing" field of a property is almost always private_, since the idea of a property is to encapsulate all outside access to it.
 
@@ -777,7 +782,7 @@ I advice using `FreeAndNil(A)` always, without exceptions, and never to call dir
 
 ### Manual and automatic freeing
 
-In many situations, the need to free the instance is not much problem. You just write a destructor, that matches a constructor, and deallocates everything that was allocated in constructor (or, more completely, in the whole lifetime of the class). Be careful to only free each thing *once*. Usually it's a good idea to set the freed reference to `nil`, usually it's most comfortable to do it by calling the `FreeAndNil(A)`.
+In many situations, the need to free the instance is not much problem. You just write a destructor, that matches a constructor, and deallocates everything that was allocated in the constructor (or, more completely, in the whole lifetime of the class). Be careful to only free each thing *once*. Usually it's a good idea to set the freed reference to `nil`, usually it's most comfortable to do it by calling the `FreeAndNil(A)`.
 
 So, like this:
 
@@ -810,7 +815,7 @@ begin
 end;
 ----
 
-To avoid the need to explicitly free the instance, one can also use the `TComponent` feature of _"ownership"_. An object that is owned will be automatically freed by the owner. It's automatically taken care of to not free an already freed instance this way (so things will also work correctly if you manually free the owned object earlier). We can change the previous example to this:
+To avoid the need to explicitly free the instance, one can also use the `TComponent` feature of _"ownership"_. An object that is _owned_ will be automatically freed by the _owner_. The mechanism is smart and it will never free an already freed instance (so things will also work correctly if you manually free the owned object earlier). We can change the previous example to this:
 
 [source,pascal]
 ----
@@ -879,7 +884,7 @@ begin
 
     Alternatively, we could avoid declaring Gun1 and Gun2,
     and instead use Guns[0] and Guns[1] in own code.
-    Or create a function like Gun1 that returns Guns[0]. }
+    Or create a method like Gun1 that returns Guns[0]. }
   Gun1 := nil;
   Gun2 := nil;
   inherited;
@@ -894,7 +899,7 @@ Beware that the list classes "ownership" mechanism is simple, and you will get a
 
 If you copy a reference to the instance, such that you have two references to the same memory, and then one of them is freed -- the other one becomes a _"dangling pointer"_. It should not be accessed, as it points to a memory that is no longer allocated. Accessing it may result in a runtime error, or garbage being returned (as the memory may be reused for other stuff in your program).
 
-Using the `FreeAndNil` to free the instance doesn't help here. `FreeAndNil` sets to `nil` only the reference it got -- there's no way for it to set all other references.
+Using the `FreeAndNil` to free the instance doesn't help here. `FreeAndNil` sets to `nil` only the reference it got -- there's no way for it to set all other references. Consider this code:
 
 [source,pascal]
 ----
@@ -905,29 +910,33 @@ begin
   O2 := O1;
   FreeAndNil(O1);
 
-  { Now O1 is nil. If some code may access it, it can use
-    "if O1 <> nil ..." to avoid calling methods on a freed instance,
-    like
-
-      if O1 <> nil then Writeln(O1.ClassName);
-
-    Trying to access a field of a nil instance (or call a method
-    that accessed a field of a nil instance) results in a predictable
-    exception at runtime. }
-
-  { With O2, things are more difficult. It's not nil, but it's invalid.
-    Trying to access a field of a non-nil invalid instance (or call a method
-    that accessed a field of such instance) results in an unpredictable
-    behavior - maybe an access violation exception, maybe a garbage data
-    returned. }
+  // what happens if we access O1 or O2 here?
 end;
 ----
 
+1. At the end of this block, the `O1` is `nil`. If some code has to access it, it can reliably use `if O1 <> nil ...` to avoid calling methods on a freed instance, like
++
+[source,pascal]
+----
+if O1 <> nil then
+  Writeln(O1.ClassName);
+----
++
+Trying to access a field of a `nil` instance results in a predictable exception at runtime. So even if some code will not check `O1 <> nil`, and will blindly access `O1` field, you will get a clear exception at runtime.
++
+Same goes for calling a virtual method, or calling a non-virtual method that accessed a field of a nil instance.
+
+2. With `O2`, things are less predictable. It's not `nil`, but it's invalid. Trying to access a field of a non-nil invalid instance
+//(or call a method that accessed a field of such instance)
+results in an unpredictable behavior -- maybe an access violation exception, maybe a garbage data returned.
+
 There are various solutions to it:
 
-* One solution is to, well, be careful. Don't assume anything about the lifetime of the reference, if it's created by other code. If a class `TCar` has a field pointing to some instance of `TWheel`, it's a _convention_ that the reference to _wheel_ is valid as long as the reference to _car_ exists, and the _car_ will free it's _wheels_ inside it's destructor. But that's just a convention, the documentation should mention if there's something more complicated going on.
+* One solution is to, well, be careful and read the documentation. Don't assume anything about the lifetime of the reference, if it's created by other code. If a class `TCar` has a field pointing to some instance of `TWheel`, it's a _convention_ that the reference to _wheel_ is valid as long as the reference to _car_ exists, and the _car_ will free it's _wheels_ inside it's destructor. But that's just a convention, the documentation should mention if there's something more complicated going on.
 
-* The other solution is to use `TComponent` class "free notification" mechanism. One component can be notified when another component is freed, and thus set it's reference to `nil`.
+* In the above example, right after freeing the `O1` instance, you can simply set the `O2` variable explicitly to `nil`. That's trivial in this simple case.
+
+* The most future-proof solution is to use `TComponent` class "free notification" mechanism. One component can be notified when another component is freed, and thus set it's reference to `nil`.
 +
 Thus you get something like a _weak reference_. It can cope with various usage scenarios, for example you can let the code from outside of the class to set your reference, and the outside code can also free the instance at anytime.
 +
@@ -1041,7 +1050,7 @@ include::code-samples/persistent.lpr[]
 
 Sometimes it's more comfortable to alternatively override the `AssignTo` method in the source class, instead of overriding the `Assign` method in the target class.
 
-Be careful when calling `inherited` in the `Assign` implementation. You should _call inherited `TPersistent.Assign` only if you cannot handle the assignment in your code_ (this allows the `AssignTo` method to work, or otherwise raise an exception when assignment cannot be done). On the other hand, if your class descends from another class that already implements the `Assign` method, then _always call the inherited ``TMyClass.Assign``_. See the example below.
+Be careful when calling `inherited` in the `Assign` implementation. You should _call inherited `TPersistent.Assign` only if you cannot handle the assignment in your code_ (this allows the `AssignTo` method to work, or otherwise raise an exception when assignment cannot be done). On the other hand, if your class descends from another class that already implements the `Assign` method, then _always call the inherited ``TMyClass.Assign``_. See the example above.
 
 NOTE: Remember that when descending from `TPersistent`, the default _visibility specifier_ is `published`, to allow streaming of `TPersistent` descendants. Not all field and property types are allowed in the `published` section. If you get errors related to it, and you don't care about streaming, just change the visibility to `public`. See the <<Visibility specifiers>> section.
 
@@ -1654,10 +1663,74 @@ The _CORBA interfaces_ in Object Pascal work pretty much like interfaces in Java
 include::code-samples/interfaces_corba_test.lpr[]
 ----
 
-NOTE: The default interface style
+### CORBA and COM types of interfaces
+
+Why are the interfaces (presented above) called "CORBA"?::
+
+  The name *CORBA* is unfortunate. A better name would be *bare interfaces*. These interfaces are a _"pure language feature"_. Use them when you want to cast various classes as the same interface, because they share a common API.
++
+//The declaration `{$interface corba}` simply means that the declared interfaces *do not* automatically descend from the special `IUnknown` interface. Which in turn means that they *do not* by default have any extra baggage (like reference-counting found in the *COM* interfaces).
+//+
+While these types of interfaces can be used together with the _CORBA (Common Object Request Broker Architecture) technology_ (see https://en.wikipedia.org/wiki/Common_Object_Request_Broker_Architecture), they are _not_ tied to this technology in any way.
+
+Is the `{$interfaces corba}` declaration needed?::
+
+  Yes, because by default
 //(if we would omit the `{$interfaces corba}` directive)
-is _COM_. But I advice to use _CORBA_ style interfaces, and the `{$interfaces corba}` directive, in all modern code dealing with interfaces. The _COM_ interfaces are somewhat an _embarrassment to the language_, to be honest (details in the next section).
-//, and it's best to avoid them if you can.
+  you create _COM interfaces_. This can be stated explicitly by saying `{$interfaces com}`, but usually it's not needed since it's the default state.
++
+And I don't advice using _COM interfaces_. Especially if you know interfaces from other programming languages. The _CORBA interfaces_ in Pascal are exactly what you expect, equal to the interfaces in C# and Java. While the _COM interfaces_ bring additional "features" that you probably don't want.
++
+Note that the `{$interfaces xxx}` declaration only affects the interfaces that do not have any explicit ancestor (just the keyword `interface`, not `interface(ISomeAncestor)`). When an interface has an ancestor, it has the same type as the ancestor, regardless of the `{$interfaces xxx}` declaration.
+
+What are COM interfaces?::
+
+  The _COM interface_ is synonymous with _an interface descending from a special `IUnknown` interface_. Descending from `IUnknown`:
++
+* Requires that your classes define the `_AddRef` and `_ReleaseRef` methods. Proper implementation of these methods can manage the lifetime of your objects using the reference-counting.
+* Adds the `QueryInterface` method.
+* Allows to interact with the _COM (Component Object Model) technology_.
+
+What do you advice to not use the COM interfaces?::
+
+  The additional features brought by the COM interfaces are rather problematic in my view. Don't get me wrong -- the idea of reference-counting is very nice. But entangling these features with interfaces (instead of making them orthogonal features) is very unclean in my eyes. It definitely doesn't match my use cases.
++
+--
+* Sometimes I want to cast my (otherwise unrelated) classes to a common interface.
+* Sometimes I want to manage memory using the reference counting approach.
+* _Maybe_ some day I will want to interact with the _COM technology_.
+--
++
+But these are all separate, unrelated needs. Entangling them in a single language feature is counter-useful in my experience. And it does cause actual problems: the reference-counting mechanism of COM, even when disabled by a special `_AddRef` and `_ReleaseRef` implementation, is still troublesome. You still need to be careful to never have a temporary interface reference hanging, after you have freed the class instance. More details about it in the next section.
++
+That is why I advice to use _CORBA_ style interfaces, and the `{$interfaces corba}` directive, in all modern code dealing with interfaces. The _COM_ interfaces are somewhat an _embarrassment to the language_, in my eyes.
++
+To be fair, the _COM interfaces_ are presented in more details in the next section anyway.
+
+Can we have reference-counting with CORBA interfaces?::
+
+  Yeah. Just add `_AddRef` / `_ReleaseRef` methods. There's no need to descend from the `IUnknown` interface. Although in most cases, if you want reference-counting with your interfaces, you may as well just use COM interfaces.
+//    Stress that non reference counted interfaces are more "bare" and deemphasize the link to corba and java. Note that iunknown doesn't just do refcounting though, it also plays a part in identity (queryinterface) that allows to get other interfaces supported by the object from the object. (e.g. to see if you can "upcast" an interface to a newer version)
+//  Roger. The way I understand, the better names would be "always-descend-from-IUnknown" vs "don't-always-descend-from-iUnknown", not "COM" vs "CORBA". That would certainly be clearer for someone who is not interested in interacting with outside services (neither COM nor CORBA) and just wants a language feature (with the purpose of casting two classes to a common interface, because they share a common API, similar to interfaces in Java/C#).
+
+### Interfaces GUIDs
+
+GUIDs are the seemingly random characters `['{ABCD1234-...}']` that you see placed at every interface definition. Yes, they are just random. Unfortunately, they are necessary.
+
+//Yes, they look ugly.
+//, and I wish they would not be necessary.
+They have no meaning (if you don't plan on integrating with communication technologies like _COM_ nor _CORBA_). But they are necessary, for implementation reasons. Don't be fooled by the compiler, that unfortunately allows you to declare interfaces without GUIDs.
+
+Without the (unique) GUIDs, your interfaces will be treated equal by the `is` operator. In effect, it will return `true` if your class supports _any_ of your interfaces. The magic function `Supports(ObjectInstance, IMyInterface)` behaves slightly better here, as it refuses to be compiled for interfaces without a GUID. This is true for both CORBA and COM interfaces, as of FPC 3.0.0.
+
+So, to be on the safe side, you should always declare a GUID for your interface. You can use _Lazarus_ GUID generator (`Ctrl + Shift + G` shortcut in the editor). Or you can use an online service like https://www.guidgenerator.com/ .
+
+Or you can write your own tool for this, using the `CreateGUID` and `GUIDToString` functions in RTL. See the example below:
+
+[source,pascal]
+----
+include::code-samples/gen_guid.lpr[]
+----
 
 ### Ugly (COM) interfaces
 
@@ -1671,9 +1744,7 @@ In my eyes, it was rather ugly to entangle _interfaces_ with such features. It c
 In practice, this means that:
 
 // +
-// The relation to COM technology has . You just have to put some random "GUID" string at the interface declaration to make it work). But the reference counting idea is baffling. Why would you connect one language feature, _interfaces_, with something so unrelated like _reference counting_? It seems, because the COM technology required it...
-
-* You need to declare a GUID at your COM interfaces, to make the `Supports(ObjectInstance, IMyInterface)` or `ObjectInstance is IMyInterface` work. Just use _Lazarus_ GUID generator (`Ctrl + Shift + G` shortcut in the editor).
+// The relation to COM technology has . The reference counting idea is baffling. Why would you connect one language feature, _interfaces_, with something so unrelated like _reference counting_? It seems, because the COM technology required it...
 
 * Your class needs to implement a magic `_AddRef`, `_Release`, and `QueryInterface` methods. Or descend from something that already implements them. A particular implementation of these methods may actually enable or disable the __reference-counting__ feature of COM interfaces (although disabling it is somewhat dangerous -- see the next point).
 
